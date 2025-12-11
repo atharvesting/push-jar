@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:push_jar/pages/view.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 

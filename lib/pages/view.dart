@@ -1,37 +1,85 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:push_jar/push.dart';
+import 'package:push_jar/push_db.dart';
+import 'package:push_jar/widgets/app_top_bar.dart';
+import 'package:push_jar/widgets/bottom_nav_bar.dart';
 
-class MainView extends StatelessWidget {
+class MainView extends StatefulWidget {
   const MainView({super.key});
 
   @override
+  State<MainView> createState() => _MainViewState();
+}
+
+class _MainViewState extends State<MainView> {
+
+  List<Push> pushes = [];
+
+  @override
   Widget build(BuildContext context) {
+    print("MainView build()");
     return Scaffold(
-      appBar: appBar(),
+      appBar: buildAppTopBar(),
       body: bodyPart(),
+      // floatingActionButton: FloatingActionButton(
+      //   shape: const CircleBorder(),
+      //   backgroundColor: Colors.blue,
+      //   splashColor: Colors.pink[200],
+      //   onPressed: () async {
+      //     print("FAB Pressed");
+      //     final push = Push(
+      //       id: DateTime.now().millisecondsSinceEpoch,
+      //       title: "DB Test push",
+      //       dateTime: DateTime.now(),
+      //       tags: ["tag1", "tag2"]
+      //     );
+
+      //     await push.insertPush(push);
+
+      //     final result = await Push(
+      //       id: 0,
+      //       title: "",
+      //       dateTime: DateTime.now(),
+      //       tags: [],
+      //     ).getAllPushes();
+
+      //     setState(() {
+      //       pushes = result;
+      //     });
+      //   },
+      //   child: const Icon(Icons.add, color: Colors.white),
+      // ),
       floatingActionButton: FloatingActionButton(
-        shape: CircleBorder(),
-        backgroundColor: Colors.blue,
-        splashColor: Colors.pink[200],
-        onPressed: () {},
-        child: const Icon(Icons.add, color: Colors.white,),
+        onPressed: () async {
+          try {
+            final testPush = Push(
+              id: DateTime.now().millisecondsSinceEpoch,
+              title: "Test",
+              dateTime: DateTime.now(),
+              tags: ["a", "b"],
+            );
+
+            await PushDatabase.insertPush(testPush);
+            final list = await PushDatabase.getAllPushes();
+            setState(() {
+              pushes = list;
+            });
+
+          } catch (e, stack) {
+            print("ERROR OCCURRED:");
+            print(e);
+            print(stack);
+          }
+        },
+        child: Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        shape: CircularNotchedRectangle(),
-        notchMargin: 8,
-        height: 60,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(icon: Icon(Icons.home), onPressed: () {}),
-            IconButton(icon: Icon(Icons.search), onPressed: () {}),
-            SizedBox(width: 32), // space for the FAB notch
-            IconButton(icon: Icon(Icons.person_2), onPressed: () {}),
-            IconButton(icon: Icon(Icons.settings), onPressed: () {}),
-          ],
-        )
+      bottomNavigationBar: PushBottomBar(
+        onTap: (i) {
+          // handle nav taps
+        },
       ),
     );
   }
@@ -49,7 +97,7 @@ class MainView extends StatelessWidget {
               hintText: "Search for your next push",
               hintStyle: TextStyle(color: Colors.blue[200]),
               suffixIcon: IconButton(
-                onPressed:() {},
+                onPressed: () {},
                 icon: Icon(Icons.filter_list_alt),
               ),
               border: OutlineInputBorder(
@@ -60,62 +108,23 @@ class MainView extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: ListView(
-            padding: EdgeInsets.all(0),
-            children: [
-            for (int i = 1; i <= 40; i++)
-              Card(
-                margin: EdgeInsets.symmetric(
-                  vertical: 8, 
-                  horizontal: 20
-                ),
+          child: ListView.builder(
+            itemCount: pushes.length,
+            itemBuilder: (context, index) {
+              final p = pushes[index];
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
                 color: Colors.blue[100],
                 elevation: 2,
                 child: Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Text("Push x $i"),
-                )
-              )
-            ],
+                  padding: const EdgeInsets.all(8),
+                  child: Text("${p.title} — ${p.tags}"),
+                ),
+              );
+            },
           ),
         ),
       ],
     );
   }
-}
-
-AppBar appBar() {
-  return AppBar(
-    title: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          height: 32,
-          width: 32,
-          child: SvgPicture.asset(
-            'assets/icons/3LC.svg',
-            fit: BoxFit.contain,
-          ),
-        ),
-        SizedBox(width: 6),
-        Text(
-          "Push Jar!", 
-          style: GoogleFonts.playfairDisplay(
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
-            )
-        ),
-      ],
-    ),
-    actions: [
-      Text(
-        "V0.1\nAll rights reserved",
-        textAlign: TextAlign.right,
-        style: GoogleFonts.playfairDisplay(
-          fontSize: 11,
-        ),
-        ),
-      SizedBox(width: 20),
-    ],
-  );
 }
