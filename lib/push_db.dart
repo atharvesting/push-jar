@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'package:path/path.dart';
 import 'package:push_jar/push.dart';
 import 'package:sqflite/sqflite.dart';
@@ -45,8 +46,21 @@ class PushDatabase {
     return maps.map((m) => Push.fromMap(m)).toList();
   }
 
-  static void clearPushes() async {
+  static Future<int> clearPushes() async {
     final db = await database;
-    db.delete('pushes');
+    return db.delete('pushes');
   }
+
+  static Future<List<Push>> fetchNPushes(int N) async {
+    final db = await database;
+    final result = await db.query(
+      'pushes',
+      orderBy: 'RANDOM()',
+      limit: N,
+    );
+
+    return result.map((json) => Push.fromMap(json)).toList();
+    // List<Push> push_list = await PushDatabase.getAllPushes();
+  }
+    
 }

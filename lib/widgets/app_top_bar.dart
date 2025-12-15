@@ -15,7 +15,7 @@ PreferredSizeWidget buildAppTopBar() {
         ),
         const SizedBox(width: 6),
         Text(
-          "Push Jar!",
+          "Push Jar",
           style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.bold, fontSize: 24),
         ),
       ],

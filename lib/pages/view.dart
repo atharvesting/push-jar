@@ -1,90 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:push_jar/push.dart';
 import 'package:push_jar/push_db.dart';
-import 'package:push_jar/widgets/app_top_bar.dart';
-import 'package:push_jar/widgets/bottom_nav_bar.dart';
+import 'package:push_jar/widgets/full_scaffold.dart';
 
-class MainView extends StatefulWidget {
+class MainView extends FullScaffold {
   const MainView({super.key});
 
   @override
   State<MainView> createState() => _MainViewState();
 }
 
-class _MainViewState extends State<MainView> {
-
-  List<Push> pushes = [];
+class _MainViewState extends FullScaffoldState<MainView> {
 
   @override
-  Widget build(BuildContext context) {
-    print("MainView build()");
-    return Scaffold(
-      appBar: buildAppTopBar(),
-      body: bodyPart(),
-      // floatingActionButton: FloatingActionButton(
-      //   shape: const CircleBorder(),
-      //   backgroundColor: Colors.blue,
-      //   splashColor: Colors.pink[200],
-      //   onPressed: () async {
-      //     print("FAB Pressed");
-      //     final push = Push(
-      //       id: DateTime.now().millisecondsSinceEpoch,
-      //       title: "DB Test push",
-      //       dateTime: DateTime.now(),
-      //       tags: ["tag1", "tag2"]
-      //     );
-
-      //     await push.insertPush(push);
-
-      //     final result = await Push(
-      //       id: 0,
-      //       title: "",
-      //       dateTime: DateTime.now(),
-      //       tags: [],
-      //     ).getAllPushes();
-
-      //     setState(() {
-      //       pushes = result;
-      //     });
-      //   },
-      //   child: const Icon(Icons.add, color: Colors.white),
-      // ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          try {
-            final testPush = Push(
-              id: DateTime.now().millisecondsSinceEpoch,
-              title: "Test",
-              dateTime: DateTime.now(),
-              tags: ["a", "b"],
-            );
-
-            await PushDatabase.insertPush(testPush);
-            final list = await PushDatabase.getAllPushes();
-            setState(() {
-              pushes = list;
-            });
-
-          } catch (e, stack) {
-            print("ERROR OCCURRED:");
-            print(e);
-            print(stack);
-          }
-        },
-        child: Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: PushBottomBar(
-        onTap: (i) {
-          // handle nav taps
-        },
-      ),
-    );
+  void initState() {
+    super.initState();
+    loadPushes();
   }
 
-  Column bodyPart() {
+  @override
+  Widget buildBody(BuildContext context) {
     return Column(
       children: [
         Padding(
@@ -97,7 +31,10 @@ class _MainViewState extends State<MainView> {
               hintText: "Search for your next push",
               hintStyle: TextStyle(color: Colors.blue[200]),
               suffixIcon: IconButton(
-                onPressed: () {},
+                onPressed: () async {
+                  await PushDatabase.clearPushes();
+                  await loadPushes();
+                },
                 icon: Icon(Icons.filter_list_alt),
               ),
               border: OutlineInputBorder(
@@ -126,5 +63,11 @@ class _MainViewState extends State<MainView> {
         ),
       ],
     );
+  }
+
+  @override
+  void handleNavTap(int index) {
+    // Your navigation logic here
+    print("Tapped nav item: $index");
   }
 }
